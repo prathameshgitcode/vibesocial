@@ -6,12 +6,12 @@ import {
   EmojiEmotions,
   Cancel,
 } from "@mui/icons-material";
-import { useContext, useRef, useState } from "react";
+import { useContext, useEffect, useRef, useState } from "react";
 import { AuthContext } from "../../context/AuthContext";
 import axios from "axios";
 import { toast } from "react-hot-toast";
 
-export default function Share() {
+export default function Share({ editPost }) {
   const { user } = useContext(AuthContext);
   const PF = process.env.REACT_APP_PUBLIC_FOLDER;
   const desc = useRef();
@@ -22,6 +22,7 @@ export default function Share() {
     const newPost = {
       userId: user._id,
       desc: desc.current.value,
+      img: '',
     };
     if (file) {
       const data = new FormData();
@@ -29,19 +30,30 @@ export default function Share() {
       data.append("name", fileName);
       data.append("file", file);
       newPost.img = fileName;
-      console.log(newPost);
       try {
         const response = await axios.post("/upload", data);
         window.location.reload();
         toast.success(response.data);
-      } catch (err) {}
+      } catch (err) { }
     }
     try {
-      const response = await axios.post("/posts", newPost);
+      const response = editPost ? await axios.put(`/posts/${editPost._id}`, newPost) : await axios.post("/posts", newPost);
       window.location.reload();
       toast.success(response.data);
-    } catch (err) {}
+    } catch (err) { }
   };
+
+
+  // Updating edit data to form
+  useEffect(() => {
+    if (editPost) {
+      desc.current.value = ''
+      editPost?.img && setFile(editPost?.img)
+      if (editPost?.desc) {
+        desc.current.value = editPost?.desc
+      }
+    }
+  }, [editPost])
 
   return (
     <div className="share">
@@ -65,7 +77,7 @@ export default function Share() {
         <hr className="shareHr" />
         {file && (
           <div className="shareImgContainer">
-            <img className="shareImg" src={URL.createObjectURL(file)} alt="" />
+            <img className="shareImg" src={editPost && typeof editPost?.img === 'string' ? PF + editPost?.img : URL.createObjectURL(file)} alt="" />
             <Cancel className="shareCancelImg" onClick={() => setFile(null)} />
           </div>
         )}
