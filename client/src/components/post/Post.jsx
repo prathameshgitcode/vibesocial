@@ -11,7 +11,7 @@ import { Link } from "react-router-dom";
 import { AuthContext } from "../../context/AuthContext";
 import { toast } from "react-hot-toast";
 
-export default function Post({ post }) {
+export default function Post({ post, setEditPost }) {
   const [like, setLike] = useState(post.likes.length);
   const [isLiked, setIsLiked] = useState(false);
   const [user, setUser] = useState({});
@@ -57,15 +57,16 @@ export default function Post({ post }) {
   };
 
   const handleEditPost = async () => {
+    setEditPost(post);
     try {
       if (user._id) {
-        const response = await axios.put(`/posts/${post._id}`, {
-          userId: user._id,
-          desc: "hey! this is an updated post. Thank you", // TODO: need to update with a function parameter or a state hook
-        });
+        // const response = await axios.put(`/posts/${post._id}`, {
+        //   userId: user._id,
+        //   desc: "hey! this is an updated post. Thank you", // TODO: need to update with a function parameter or a state hook
+        // });
         // console.log(response.data);
-        window.location.reload();
-        toast.success(response.data);
+        // window.location.reload();
+        // toast.success(response.data);
       }
     } catch (err) {
       console.log(err);
@@ -97,9 +98,11 @@ export default function Post({ post }) {
             <span className="deleteButtonContainer" onClick={handleDeletePost}>
               <DeleteOutlineOutlinedIcon />
             </span>
-            <span className="editButtonContainer" onClick={handleEditPost}>
-              <EditRoundedIcon />
-            </span>
+            {!post?.img &&
+              <span className="editButtonContainer" onClick={handleEditPost}>
+                <EditRoundedIcon />
+              </span>
+            }
           </div>
         </div>
 
